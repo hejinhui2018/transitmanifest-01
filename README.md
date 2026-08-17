@@ -42,5 +42,4 @@ make docker-test
 go test ./integration -run TestClosedManifestDuplicateScanSurvivesRestart -count=20
 ```
 
-在 `main` 上该命令应稳定失败，在 `gold_model_fix` 上应稳定通过；没有 `test_model_fix` 分支或提交。
-
+在 `main` 上该命令应稳定失败，在 `gold_model_fix` 和 `test_model_fix` 上应稳定通过；`test_model_fix` 保存模型实际交付结果。
