@@ -13,11 +13,11 @@ func recoverState(store *storage.Store) (persistedState, error) {
 	if err != nil {
 		return state, err
 	}
-	// BUG(main): snapshot recovery rebuilds operational aggregates but drops
-	// the scan-id idempotency index, so a post-restart replay is accepted.
-	if snapshot.Sequence > 0 {
-		state.Scans = make(map[string]domain.PackageScan)
-	}
+	// The snapshot payload already restores the full persisted state,
+	// including the scan-id idempotency index. Only records appended after
+	// the snapshot sequence are replayed below, so the index must be kept to
+	// reject duplicate scans that were already applied before the restart.
+	_ = snapshot
 	for _, record := range records {
 		if err := applyRecord(&state, record); err != nil {
 			return state, fmt.Errorf("replay sequence %d: %w", record.Sequence, err)
