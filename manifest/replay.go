@@ -9,9 +9,14 @@ import (
 
 func recoverState(store *storage.Store) (persistedState, error) {
 	state := newState()
-	_, records, err := store.Recover(&state)
+	snapshot, records, err := store.Recover(&state)
 	if err != nil {
 		return state, err
+	}
+	// BUG(main): snapshot recovery rebuilds operational aggregates but drops
+	// the scan-id idempotency index, so a post-restart replay is accepted.
+	if snapshot.Sequence > 0 {
+		state.Scans = make(map[string]domain.PackageScan)
 	}
 	for _, record := range records {
 		if err := applyRecord(&state, record); err != nil {
